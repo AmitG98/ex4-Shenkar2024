@@ -1,5 +1,5 @@
 {
-  "Destinations": [
+  "destinations": [
     {
       "id": "1",
       "dest_name": "Thailand"
@@ -41,7 +41,7 @@
       "dest_name": "India"
     }
   ],
-  "Types": [
+  "types": [
     {
       "id": "1",
       "type": "culture"
