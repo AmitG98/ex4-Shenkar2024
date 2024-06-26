@@ -1,0 +1,66 @@
+{
+  "Destinations": [
+    {
+      "id": "1",
+      "dest_name": "Thailand"
+    },
+    {
+      "id": "2",
+      "dest_name": "Philippines"
+    },
+    {
+      "id": "3",
+      "dest_name": "Greece"
+    },
+    {
+      "id": "4",
+      "dest_name": "Italy"
+    },
+    {
+      "id": "5",
+      "dest_name": "Japan"
+    },
+    {
+      "id": "6",
+      "dest_name": "Cambodia"
+    },
+    {
+      "id": "7",
+      "dest_name": "Romania"
+    },
+    {
+      "id": "8",
+      "dest_name": "Nepal"
+    },
+    {
+      "id": "9",
+      "dest_name": "Vietnam"
+    },
+    {
+      "id": "10",
+      "dest_name": "India"
+    }
+  ],
+  "Types": [
+    {
+      "id": "1",
+      "type": "culture"
+    },
+    {
+      "id": "2",
+      "type": "ski"
+    },
+    {
+      "id": "3",
+      "type": "extreme"
+    },
+    {
+      "id": "4",
+      "type": "shopping"
+    },
+    {
+      "id": "5",
+      "type": "sunbathing"
+    }
+  ]
+}
