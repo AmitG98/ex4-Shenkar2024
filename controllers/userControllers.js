@@ -15,6 +15,7 @@ exports.userControllers = {
             connection.end();
             res.status(201).json({ accessCode:access_code });
         } catch(error) {
+            console.error('Error inserting user:',error);
             res.status(400).json({ error: 'Username already exists' });
         }
     },

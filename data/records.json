@@ -1,34 +1,34 @@
 {
   "destinations": [
     {
-      "dest_name": "Thailand"
+      "nameDest": "Thailand"
     },
     {
-      "dest_name": "Philippines"
+      "nameDest": "Philippines"
     },
     {
-      "dest_name": "Greece"
+      "nameDest": "Greece"
     },
     {
-      "dest_name": "Italy"
+      "nameDest": "Italy"
     },
     {
-      "dest_name": "Japan"
+      "nameDest": "Japan"
     },
     {
-      "dest_name": "Cambodia"
+      "nameDest": "Cambodia"
     },
     {
-      "dest_name": "Romania"
+      "nameDest": "Romania"
     },
     {
-      "dest_name": "Nepal"
+      "nameDest": "Nepal"
     },
     {
-      "dest_name": "Vietnam"
+      "nameDest": "Vietnam"
     },
     {
-      "dest_name": "India"
+      "nameDest": "India"
     }
   ],
   "types": [

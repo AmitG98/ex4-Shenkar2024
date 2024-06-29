@@ -2,7 +2,6 @@ require('dotenv').config();
 const express = require('express');
 const app = express();
 const port = process.env.PORT || 8080;
-const tripData = require('./data/records.json');
 
 const { preferencesRouter } = require('./routers/preferencesRouter.js');
 const { usersRouter } = require('./routers/usersRouter.js');
