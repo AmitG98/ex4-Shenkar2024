@@ -11,9 +11,7 @@ const preferencesRouter = new Router();
 // postsRouter.delete('/:postId', postsController.deletePost);
 
 preferencesRouter.post("/newPreference/:userId",preferenceControllers.addPreference);
-preferencesRouter.post("/updatePreference/:userId",preferenceControllers.updatePreference);
-preferencesRouter.get("/getPreference/:userId",preferenceControllers.updatePreference);
-
-
+preferencesRouter.put("/updatePreference/:userId",preferenceControllers.updatePreference);
+preferencesRouter.get("/getPreference/:userId",preferenceControllers.getPreferences);
 
 module.exports = { preferencesRouter };

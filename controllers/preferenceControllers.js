@@ -9,7 +9,6 @@ exports.preferenceControllers = {
         try {
             const accessCodeUser = body.access_code;
             const accessCodeDB = await getAccessCodeById(req.params.userId, connection);
-            // let errorsData = [];
 
             if (accessCodeUser === accessCodeDB.access_code) {
                 let checkSuccess = true;
@@ -26,7 +25,7 @@ exports.preferenceControllers = {
                         if (!checkSuccess) {
                             res.status(400).json({ error:'The length of the vacation cannot be more than a week' });
                         } else {
-                            await connection.execute(`INSERT INTO tbl_53_preferences (access_code,start_date,end_date,destination,type_vacation) VALUES ("${accessCodeUser}","${body.start_date}","${body.end_date}","${body.destination}","${body.type_vacation}")`);
+                            await connection.execute(`INSERT INTO tbl_53_preferences (id,access_code,start_date,end_date,destination,type_vacation) VALUES ("${req.params.userId}","${accessCodeUser}","${body.start_date}","${body.end_date}","${body.destination}","${body.type_vacation}")`);
                             res.status(201).json({ success: `Successful connection and preferences added!` });
                         }
                     }
@@ -84,7 +83,7 @@ exports.preferenceControllers = {
                 }
 
                 if (successfulData.length > 0 || errorsData.length > 0) {
-                    res.status(400).json({ success:`Successful Connection`, data: successfulData, error: errorsData});
+                    res.status(201).json({ success:`Successful Connection`, data: successfulData, error: errorsData});
                 }   
             } else {
                 res.status(400).json({ error: 'Access code doesnt match. Connection failed!' });
@@ -93,11 +92,27 @@ exports.preferenceControllers = {
             res.status(500).json({ error: 'Internal Server Error', details: error.message });
         }
         connection.end();
+    },
+    async getPreferences(req, res) {
+        const connection = await dbConnection.createConnection();
+        try {
+            const prefer = await getPostById(req.params.userId, connection);
+            res.status(201).json({ data: `Destination: ${prefer.destination}, type: ${prefer.type_vacation}, dates: ${prefer.start_date} until ${prefer.end_date}` });
+        
+        } catch(error) {
+            res.status(500).json({ error: 'Internal Server Error', details: error.message });
+        }
+        connection.end();
     }
 };
 
 async function getAccessCodeById(userId, connection) {
-    const [rows] = await connection.execute(`SELECT access_code FROM tbl_53_users WHERE id =${userId}`);
+    const [rows] = await connection.execute(`SELECT * FROM tbl_53_users WHERE id =${userId}`);
+    return rows[0];
+}
+
+async function getPostById(userId, connection) {
+    const [rows] = await connection.execute(`SELECT * FROM tbl_53_preferences WHERE id =${userId}`);
     return rows[0];
 }
 
