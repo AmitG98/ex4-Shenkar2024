@@ -10,11 +10,8 @@ const preferencesRouter = new Router();
 // postsRouter.put('/:postId', postsController.updatePost);
 // postsRouter.delete('/:postId', postsController.deletePost);
 
-// postsRouter.post("/register", postsController.newUser);
-// preferencesRouter.post("/newPreference", (req, res) => {
-//     const { body } = req;
-//     preferenceControllers.addPreference(tripData, body);
-// });
 preferencesRouter.post("/newPreference/:userId",preferenceControllers.addPreference);
+preferencesRouter.post("/updatePreference/:userId",preferenceControllers.updatePreference);
+
 
 module.exports = { preferencesRouter };

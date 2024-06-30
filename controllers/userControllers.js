@@ -2,7 +2,6 @@ const { v4: uuidv4 } = require('uuid');
 const { dbConnection } = require('../db_connection');
 
 exports.userControllers = {
-    // GET localhost:8081/posts
     async newUser(req, res) {
         const connection = await dbConnection.createConnection();
 
