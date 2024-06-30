@@ -12,6 +12,8 @@ const preferencesRouter = new Router();
 
 preferencesRouter.post("/newPreference/:userId",preferenceControllers.addPreference);
 preferencesRouter.post("/updatePreference/:userId",preferenceControllers.updatePreference);
+preferencesRouter.get("/getPreference/:userId",preferenceControllers.updatePreference);
+
 
 
 module.exports = { preferencesRouter };

@@ -8,7 +8,7 @@ exports.preferenceControllers = {
         const { body } = req;
         try {
             const accessCodeUser = body.access_code;
-            const accessCodeDB = await getPostById(req.params.userId, connection);
+            const accessCodeDB = await getAccessCodeById(req.params.userId, connection);
             // let errorsData = [];
 
             if (accessCodeUser === accessCodeDB.access_code) {
@@ -22,8 +22,13 @@ exports.preferenceControllers = {
                     if (!checkSuccess) {
                         res.status(400).json({ error:`Type trip is not in the list` });
                     } else {
-                        await connection.execute(`INSERT INTO tbl_53_preferences (access_code,start_date,end_date,destination,type_vacation) VALUES ("${accessCodeUser}","${body.start_date}","${body.end_date}","${body.destination}","${body.type_vacation}")`);
-                        res.status(201).json({ success: `Successful connection and preferences added!` });
+                        checkSuccess = await checkDates(body.start_date, body.end_date);
+                        if (!checkSuccess) {
+                            res.status(400).json({ error:'The length of the vacation cannot be more than a week' });
+                        } else {
+                            await connection.execute(`INSERT INTO tbl_53_preferences (access_code,start_date,end_date,destination,type_vacation) VALUES ("${accessCodeUser}","${body.start_date}","${body.end_date}","${body.destination}","${body.type_vacation}")`);
+                            res.status(201).json({ success: `Successful connection and preferences added!` });
+                        }
                     }
                 }                
             } else {
@@ -39,21 +44,23 @@ exports.preferenceControllers = {
         const { body } = req;
         try {
             const accessCodeUser = body.access_code;
-            const accessCodeDB = await getPostById(req.params.userId, connection);
+            const accessCodeDB = await getAccessCodeById(req.params.userId, connection);
             let successfulData = [];
             let errorsData = [];
 
             if (accessCodeUser === accessCodeDB.access_code) {
                 let checkSuccess = true;
 
-                if (body.start_date != null) {
-                    await connection.execute(`UPDATE tbl_53_preferences SET start_date= "${body.start_date}" WHERE access_code = "${accessCodeUser}"`);     
-                    successfulData.push(`Start date updated to ${body.start_date}`);
-                }
-
-                if (body.end_date != null) {
-                    await connection.execute(`UPDATE tbl_53_preferences SET end_date = "${body.end_date}" WHERE access_code = "${accessCodeUser}"`);     
-                    successfulData.push(`End date updated to ${body.end_date}`);
+                if (body.start_date != null || body.end_date != null) {
+                    if (body.start_date != null && body.end_date != null) {
+                        await updateFullDate(body,errorsData,successfulData,accessCodeUser,connection);
+                    }
+                    else if (body.start_date != null && body.end_date == null) {
+                        await updateStartDate(body,errorsData,successfulData,accessCodeUser,connection);
+                    }
+                    else {
+                        await updateEndDate(body,errorsData,successfulData,accessCodeUser,connection);
+                    }
                 }
 
                 if (body.destination != null) {
@@ -89,8 +96,13 @@ exports.preferenceControllers = {
     }
 };
 
-async function getPostById(userId, connection) {
+async function getAccessCodeById(userId, connection) {
     const [rows] = await connection.execute(`SELECT access_code FROM tbl_53_users WHERE id =${userId}`);
+    return rows[0];
+}
+
+async function getPostByAccessCode(accessCode, connection) {
+    const [rows] = await connection.execute(`SELECT * FROM tbl_53_preferences WHERE access_code = "${accessCode}"`);
     return rows[0];
 }
 
@@ -111,3 +123,63 @@ async function checkType(body) {
     }
     return false;
 }
+
+async function checkDates(startDate, endDate) {
+    const parts = startDate.split('-');
+    const dayStart = parseInt(parts[0], 10);
+    const monthStart = parseInt(parts[1], 10);
+    const yearStart = parseInt(parts[2], 10);
+    // console.log(`day -${dayStart}, month- ${monthStart}, ${yearStart}`);
+
+    const parts2 = endDate.split('-');
+    const dayEnd = parseInt(parts2[0], 10);
+    const monthEnd = parseInt(parts2[1], 10);
+    const yearEnd = parseInt(parts2[2], 10);
+    // console.log(`day -${dayEnd}, month- ${monthEnd}, ${yearEnd}`);
+
+    // if (((yearEnd > yearStart) && (monthStart != 12)) || ((monthStart == monthEnd) && (dayEnd - dayStart > 7)) || (monthEnd - monthStart > 1) || ((monthEnd - monthStart == 1) && (31 - dayStart + dayEnd > 7))) {
+    //     return false;
+    // }
+    const start = new Date(yearStart,monthStart,dayStart);
+    const end = new Date(yearEnd,monthEnd,dayEnd);
+
+    const timeDifference = end - start;
+    const dayDifference = timeDifference / (1000 * 60 * 60 * 24);
+    if (dayDifference > 7 || dayDifference < 0) {
+        return false;
+    }
+    return true;
+}
+
+async function updateFullDate(body, errorsData, successfulData, accessCode, connection) {
+    let checkSuccess = await checkDates(body.start_date, body.end_date);
+    if (!checkSuccess) {
+        errorsData.push(`The length of the vacation cannot be more than a week`);
+    } else {
+        await connection.execute(`UPDATE tbl_53_preferences SET start_date= "${body.start_date}", end_date="${body.end_date}" WHERE access_code = "${accessCode}"`);     
+        successfulData.push(`Start-date and end-date updated to ${body.start_date} - ${body.end_date}`);
+    }
+}
+
+async function updateStartDate(body, errorsData, successfulData, accessCode, connection) {
+    const selectedRow = await getPostByAccessCode(accessCode, connection);
+    let checkSuccess = await checkDates(body.start_date, selectedRow.end_date);
+    if (!checkSuccess) {
+        errorsData.push(`The length of the vacation cannot be more than a week`);
+    } else {
+        await connection.execute(`UPDATE tbl_53_preferences SET start_date= "${body.start_date}" WHERE access_code = "${accessCode}"`);     
+        successfulData.push(`Start date updated to ${body.start_date}`);
+    }
+}
+
+async function updateEndDate(body, errorsData, successfulData, accessCode, connection) {
+    const selectedRow = await getPostByAccessCode(accessCode, connection);
+    let checkSuccess = await checkDates(selectedRow.start_date, body.end_date);
+    if (!checkSuccess) {
+        errorsData.push(`The length of the vacation cannot be more than a week`);
+    } else {
+        await connection.execute(`UPDATE tbl_53_preferences SET end_date = "${body.end_date}" WHERE access_code = "${accessCode}"`);     
+        successfulData.push(`End date updated to ${body.end_date}`);
+    }
+}
+
