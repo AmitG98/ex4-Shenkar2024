@@ -7,6 +7,7 @@ exports.preferenceControllers = {
         const connection = await dbConnection.createConnection();
         const { body } = req;
         try {
+            await connection.execute(`SET time_zone = '+03:00';`);
             const accessCodeUser = body.access_code;
             const accessCodeDB = await getAccessCodeById(req.params.userId, connection);
 
@@ -25,7 +26,7 @@ exports.preferenceControllers = {
                         if (!checkSuccess) {
                             res.status(400).json({ error:'The length of the vacation cannot be more than a week' });
                         } else {
-                            await connection.execute(`INSERT INTO tbl_53_preferences (id,access_code,start_date,end_date,destination,type_vacation) VALUES ("${req.params.userId}","${accessCodeUser}","${body.start_date}","${body.end_date}","${body.destination}","${body.type_vacation}")`);
+                            await connection.execute(`INSERT INTO tbl_53_preferences (id,access_code,start_date,end_date,destination,type_vacation,timeStamp) VALUES ("${req.params.userId}","${accessCodeUser}","${body.start_date}","${body.end_date}","${body.destination}","${body.type_vacation}",now())`);
                             res.status(201).json({ success: `Successful connection and preferences added!` });
                         }
                     }
@@ -42,6 +43,7 @@ exports.preferenceControllers = {
         const connection = await dbConnection.createConnection();
         const { body } = req;
         try {
+            await connection.execute(`SET time_zone = '+03:00';`);
             const accessCodeUser = body.access_code;
             const accessCodeDB = await getAccessCodeById(req.params.userId, connection);
             let successfulData = [];
@@ -67,7 +69,7 @@ exports.preferenceControllers = {
                     if (!checkSuccess) {
                         errorsData.push(`Destination ${body.destination} is not in the list`);
                     } else {
-                        await connection.execute(`UPDATE tbl_53_preferences SET destination = "${body.destination}" WHERE access_code = "${accessCodeUser}"`);     
+                        await connection.execute(`UPDATE tbl_53_preferences SET destination = "${body.destination}", timeStamp = now() WHERE access_code = "${accessCodeUser}"`);     
                         successfulData.push(`Destination updated to ${body.destination}`);
                     }
                 }
@@ -77,7 +79,7 @@ exports.preferenceControllers = {
                     if (!checkSuccess) {
                         errorsData.push(`Vacation type ${body.type_vacation} is not in the list`);
                     } else {
-                        await connection.execute(`UPDATE tbl_53_preferences SET type_vacation = "${body.type_vacation}" WHERE access_code = "${accessCodeUser}"`);     
+                        await connection.execute(`UPDATE tbl_53_preferences SET type_vacation = "${body.type_vacation}", timeStamp = now() WHERE access_code = "${accessCodeUser}"`);     
                         successfulData.push(`Vacation type updated to ${body.type_vacation}`);
                     }        
                 }
@@ -171,7 +173,7 @@ async function updateFullDate(body, errorsData, successfulData, accessCode, conn
     if (!checkSuccess) {
         errorsData.push(`The length of the vacation cannot be more than a week`);
     } else {
-        await connection.execute(`UPDATE tbl_53_preferences SET start_date= "${body.start_date}", end_date="${body.end_date}" WHERE access_code = "${accessCode}"`);     
+        await connection.execute(`UPDATE tbl_53_preferences SET start_date= "${body.start_date}", end_date="${body.end_date}", timeStamp = now() WHERE access_code = "${accessCode}"`);     
         successfulData.push(`Start-date and end-date updated to ${body.start_date} - ${body.end_date}`);
     }
 }
@@ -182,7 +184,7 @@ async function updateStartDate(body, errorsData, successfulData, accessCode, con
     if (!checkSuccess) {
         errorsData.push(`The length of the vacation cannot be more than a week`);
     } else {
-        await connection.execute(`UPDATE tbl_53_preferences SET start_date= "${body.start_date}" WHERE access_code = "${accessCode}"`);     
+        await connection.execute(`UPDATE tbl_53_preferences SET start_date= "${body.start_date}", timeStamp = now() WHERE access_code = "${accessCode}"`);     
         successfulData.push(`Start date updated to ${body.start_date}`);
     }
 }
