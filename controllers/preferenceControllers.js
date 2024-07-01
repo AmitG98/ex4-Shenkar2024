@@ -117,7 +117,8 @@ exports.preferenceControllers = {
 
             const resultDest = await checkResultDestOrType(preferences, 'destination');
             const resultType = await checkResultDestOrType(preferences, 'type_vacation');
-            
+            const resultDate = await checkResultDates(preferences);
+
         } catch(error) {
             res.status(500).json({ error: 'Internal Server Error', details: error.message });
         }
@@ -254,4 +255,46 @@ async function checkResultDestOrType(preferences, property) {
         return earliestPreference[property];
     }
     return resultPrefer;
+}
+
+function parseDate(dateStr) {
+    const [day, month, year] = dateStr.split('-').map(Number);
+    return new Date(year, month - 1, day);
+}
+
+async function checkResultDates(preferences) {
+    let earliestPreference = preferences[0];
+    let latestStartDate = parseDate(preferences[0].start_date);
+    let earliestEndDate = parseDate(preferences[0].end_date);
+
+    for (const pref of preferences) {
+        const startDate = parseDate(pref.start_date);
+        const endDate = parseDate(pref.end_date);
+
+        if (startDate > latestStartDate) {
+            latestStartDate = startDate;
+        }
+        if (endDate < earliestEndDate) {
+            earliestEndDate = endDate;
+        }
+
+        if (latestStartDate > earliestEndDate) {
+            for (const pref of preferences) {
+                if (new Date(pref.timestamp) < new Date(earliestPreference.timestamp)) {
+                    earliestPreference = pref;
+                }
+            }
+            return { startDate:earliestPreference.start_date, endDate:earliestPreference.end_date };
+        }
+    }
+    const start = formatDate(latestStartDate);
+    const end = formatDate(earliestEndDate);
+    return { start:start, end:end };
+}
+
+function formatDate(date) {
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0'); // month is 0-indexed in JavaScript Date
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
 }
