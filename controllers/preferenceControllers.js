@@ -164,17 +164,12 @@ async function checkDates(startDate, endDate) {
     const dayStart = parseInt(parts[0], 10);
     const monthStart = parseInt(parts[1], 10);
     const yearStart = parseInt(parts[2], 10);
-    // console.log(`day -${dayStart}, month- ${monthStart}, ${yearStart}`);
 
     const parts2 = endDate.split('-');
     const dayEnd = parseInt(parts2[0], 10);
     const monthEnd = parseInt(parts2[1], 10);
     const yearEnd = parseInt(parts2[2], 10);
-    // console.log(`day -${dayEnd}, month- ${monthEnd}, ${yearEnd}`);
 
-    // if (((yearEnd > yearStart) && (monthStart != 12)) || ((monthStart == monthEnd) && (dayEnd - dayStart > 7)) || (monthEnd - monthStart > 1) || ((monthEnd - monthStart == 1) && (31 - dayStart + dayEnd > 7))) {
-    //     return false;
-    // }
     const start = new Date(yearStart,monthStart,dayStart);
     const end = new Date(yearEnd,monthEnd,dayEnd);
 
@@ -254,17 +249,12 @@ async function checkResultDestOrType(preferences, property) {
     }
 
     let earliest = parseTimestamp(earliestPreference.timeStamp);
-    // console.log(earliest);
-
-    // console.log(maxCount);
     if (maxCount == 1) {
         for (const pref of preferences) {
             const parsedTimestamp = parseTimestamp(pref.timeStamp);
-            // console.log(`pref- ${parsedTimestamp}, earliest- ${earliest}`);
             if (new Date(parsedTimestamp) < new Date(earliest)) {
                 earliestPreference = pref;
                 earliest = parseTimestamp(earliestPreference.timeStamp);
-                // console.log(`earli- ${earliestPreference[property]}`);
             }
         }
         return earliestPreference[property];
@@ -297,11 +287,9 @@ async function checkResultDates(preferences) {
         if (latestStartDate > earliestEndDate) {
             for (const pref of preferences) {
                 const parsedTimestamp = parseTimestamp(pref.timeStamp);
-                // console.log(`pref- ${parsedTimestamp}, earliest- ${earliest}`);
                 if (new Date(parsedTimestamp) < new Date(earliest)) {
                     earliestPreference = pref;
                     earliest = parseTimestamp(earliestPreference.timeStamp);
-                    // console.log(`earli- ${earliestPreference[property]}`);
                 }
             }
             console.log(earliestPreference);
