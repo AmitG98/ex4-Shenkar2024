@@ -118,7 +118,7 @@ exports.preferenceControllers = {
             const resultDest = await checkResultDestOrType(preferences, 'destination');
             const resultType = await checkResultDestOrType(preferences, 'type_vacation');
             const resultDate = await checkResultDates(preferences);
-            res.status(201).json({ data: `the selected vacation is: ${resultDest} with type of ${resultType} on the dates ${resultDate.start} until ${resultDate.end}`});
+            res.status(201).json({ data: `the selected vacation is: ${resultDest} with type of ${resultType} on the dates ${resultDate.start_date} until ${resultDate.end_date}`});
         } catch(error) {
             res.status(500).json({ error: 'Internal Server Error', details: error.message });
         }
@@ -223,6 +223,13 @@ async function getPreferencesofGroup(connection) {
     return rows;
 }
 
+function parseTimestamp(timestamp) {
+    const [datePart, timePart] = timestamp.split(' ');
+    const [year, month, day] = datePart.split('-');
+    const [hour, minute, second] = timePart.split(':');
+    return new Date(year, month - 1, day, hour, minute, second);
+}
+
 async function checkResultDestOrType(preferences, property) {
     const preferCount = {};
     let earliestPreference = preferences[0];
@@ -246,10 +253,18 @@ async function checkResultDestOrType(preferences, property) {
         }
     }
 
-    if (maxCount == 0) {
+    let earliest = parseTimestamp(earliestPreference.timeStamp);
+    // console.log(earliest);
+
+    // console.log(maxCount);
+    if (maxCount == 1) {
         for (const pref of preferences) {
-            if (new Date(pref.timestamp) < new Date(earliestPreference.timestamp)) {
+            const parsedTimestamp = parseTimestamp(pref.timeStamp);
+            // console.log(`pref- ${parsedTimestamp}, earliest- ${earliest}`);
+            if (new Date(parsedTimestamp) < new Date(earliest)) {
                 earliestPreference = pref;
+                earliest = parseTimestamp(earliestPreference.timeStamp);
+                // console.log(`earli- ${earliestPreference[property]}`);
             }
         }
         return earliestPreference[property];
@@ -278,23 +293,31 @@ async function checkResultDates(preferences) {
             earliestEndDate = endDate;
         }
 
+        let earliest = parseTimestamp(earliestPreference.timeStamp);
         if (latestStartDate > earliestEndDate) {
             for (const pref of preferences) {
-                if (new Date(pref.timestamp) < new Date(earliestPreference.timestamp)) {
+                const parsedTimestamp = parseTimestamp(pref.timeStamp);
+                // console.log(`pref- ${parsedTimestamp}, earliest- ${earliest}`);
+                if (new Date(parsedTimestamp) < new Date(earliest)) {
                     earliestPreference = pref;
+                    earliest = parseTimestamp(earliestPreference.timeStamp);
+                    // console.log(`earli- ${earliestPreference[property]}`);
                 }
             }
-            return { start:earliestPreference.start_date, end:earliestPreference.end_date };
+            console.log(earliestPreference);
+
+            return earliestPreference;
+
         }
     }
     const start = formatDate(latestStartDate);
     const end = formatDate(earliestEndDate);
-    return { start:start, end:end };
+    return { start_date:start, end_date:end };
 }
 
 function formatDate(date) {
     const day = date.getDate().toString().padStart(2, '0');
-    const month = (date.getMonth() + 1).toString().padStart(2, '0'); // month is 0-indexed in JavaScript Date
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
     const year = date.getFullYear();
-    return `${day}/${month}/${year}`;
+    return `${day}-${month}-${year}`;
 }
