@@ -99,7 +99,7 @@ exports.preferenceControllers = {
         const connection = await dbConnection.createConnection();
         try {
             const prefer = await getPostById(req.params.userId, connection);
-            res.status(201).json({ data: `Destination: ${prefer.destination}, type: ${prefer.type_vacation}, dates: ${prefer.start_date} until ${prefer.end_date}` });
+            res.status(200).json({ data: { Destination:prefer.destination, type: prefer.type_vacation, dates: `${prefer.start_date} until ${prefer.end_date}` }});
         
         } catch(error) {
             res.status(500).json({ error: 'Internal Server Error', details: error.message });
@@ -118,7 +118,7 @@ exports.preferenceControllers = {
             const resultDest = await checkResultDestOrType(preferences, 'destination');
             const resultType = await checkResultDestOrType(preferences, 'type_vacation');
             const resultDate = await checkResultDates(preferences);
-
+            res.status(201).json({ data: `the selected vacation is: ${resultDest} with type of ${resultType} on the dates ${resultDate.start} until ${resultDate.end}`});
         } catch(error) {
             res.status(500).json({ error: 'Internal Server Error', details: error.message });
         }
@@ -284,7 +284,7 @@ async function checkResultDates(preferences) {
                     earliestPreference = pref;
                 }
             }
-            return { startDate:earliestPreference.start_date, endDate:earliestPreference.end_date };
+            return { start:earliestPreference.start_date, end:earliestPreference.end_date };
         }
     }
     const start = formatDate(latestStartDate);
