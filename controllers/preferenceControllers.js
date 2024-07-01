@@ -105,6 +105,23 @@ exports.preferenceControllers = {
             res.status(500).json({ error: 'Internal Server Error', details: error.message });
         }
         connection.end();
+    },
+    async getResults(req, res) {
+        const connection = await dbConnection.createConnection();
+        try {
+            const preferences = await getPreferencesofGroup(connection);
+            if (preferences.length !== 5) {
+                res.status(400).json({ error: `Wait for everyone's preferences`});
+                return;
+            }
+
+            const resultDest = await checkResultDestOrType(preferences, 'destination');
+            const resultType = await checkResultDestOrType(preferences, 'type_vacation');
+            
+        } catch(error) {
+            res.status(500).json({ error: 'Internal Server Error', details: error.message });
+        }
+        connection.end();
     }
 };
 
@@ -200,3 +217,41 @@ async function updateEndDate(body, errorsData, successfulData, accessCode, conne
     }
 }
 
+async function getPreferencesofGroup(connection) {
+    const [rows] = await connection.execute(`SELECT * FROM tbl_53_preferences`);
+    return rows;
+}
+
+async function checkResultDestOrType(preferences, property) {
+    const preferCount = {};
+    let earliestPreference = preferences[0];
+
+    for (const pref of preferences) {
+        const value = pref[property];
+
+        if (preferCount[value]) {
+            preferCount[value]++;
+        } else {
+            preferCount[value] = 1;
+        }
+    }
+    let resultPrefer = null;
+    let maxCount = 0;
+
+    for (const [value, count] of Object.entries(preferCount)) {
+        if (count > maxCount) {
+            maxCount = count;
+            resultPrefer = value;
+        }
+    }
+
+    if (maxCount == 0) {
+        for (const pref of preferences) {
+            if (new Date(pref.timestamp) < new Date(earliestPreference.timestamp)) {
+                earliestPreference = pref;
+            }
+        }
+        return earliestPreference[property];
+    }
+    return resultPrefer;
+}
