@@ -1,4 +1,3 @@
-const { v4: uuidv4 } = require('uuid');
 const { dbConnection } = require('../db_connection');
 const tripData = require('../data/records.json');
 
